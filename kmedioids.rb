@@ -26,7 +26,7 @@ def printGenes(genes)
     if(!clusters.include?(gene[2]))
       clusters.push(gene[2])
     end
-    gs.push(["Gene #{index}", gene[0], gene[1], "C#{clusters.index(gene[2]) + 1}"])
+    gs.push(["Gene #{index+1}", gene[0], gene[1], "C#{clusters.index(gene[2]) + 1}"])
   end
   printMatrix gs
 end
