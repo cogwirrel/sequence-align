@@ -1,3 +1,5 @@
+require 'rational'
+
 # Each column represents a vertex, and each row represents
 # the vertices this vertex is connected to.
 # Eg GRAPH[1] == [0,2] means vertex 1 is connected to vertex 0 and 2
@@ -21,12 +23,22 @@ GRAPHY = [[1,2,5],
           [5,6,8],
           [5,6,7]]
 
+GRIDGRAPH = [[1,2],
+             [0,3],
+             [0,3,4],
+             [1,2,5],
+             [2,5],
+             [3,5]]
+
 # Return all automorphism orbit pairs
 def autoMorphismOrbitPairs(graph)
   pairs = []
+  # Find pairs of vertices that can be swapped to produce isomorphism of graph
   graph.each_with_index do |v1Neighbours, v1|
     graph.each_with_index do |v2Neighbours, v2|
+      # Only care about different vertices
       if v1 != v2
+        # Vertices can be swapped if they have the same set of neighbours
         if v1Neighbours.sort == v2Neighbours.sort ||
            (v1Neighbours + [v1]).sort == (v2Neighbours + [v2]).sort
            pairs.push([v1, v2].sort)
@@ -84,8 +96,9 @@ def floydWarshall(graph)
   # Number of vertices
   vertices = graph.length
 
-  # Create shortest path matrix and initialise paths to infinity
-  paths = Array.new(vertices) {Array.new(vertices) {Float::INFINITY}}
+  # Create shortest path matrix and initialise paths to maximum path
+  # length - the number of vertices in the graph
+  paths = Array.new(vertices) {Array.new(vertices) {vertices}}
 
   # Store highest index vertex that must be travelled through to take the
   # shortest path
@@ -132,7 +145,7 @@ def shortestPaths(u, v, paths, intermediates)
           # Last vertex in path repeated in midToV
           uToMid.pop
           # Add all combinations of shortest paths to middle vertex
-          allShortestPaths.push (uToMid + midToV)
+          allShortestPaths.push(uToMid + midToV)
         end
       end
     end
@@ -162,7 +175,7 @@ def betweenness(v, graph)
     end
   end
 
-  return passV.to_r / (passV + noPassV).to_r
+  return Rational(passV) / Rational(passV + noPassV)
 end
 
 # Calculate the betweenness centrality of all vertices in graph
@@ -187,5 +200,5 @@ end
 q2_2_c
 q2_2_d
 
-puts autoMorphismOrbitPairs(GRAPH).inspect
-puts autoMorphismOrbits(GRAPH).inspect
+puts autoMorphismOrbitPairs(GRIDGRAPH).inspect
+puts autoMorphismOrbits(GRIDGRAPH).inspect
