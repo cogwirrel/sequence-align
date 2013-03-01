@@ -1,0 +1,101 @@
+require 'blosum'
+require 'utils'
+
+class SmithWaterman
+  def initialize(seqA, seqB, seqC)
+    @A = seqA
+    @B = seqB
+    @C = seqC
+
+    alen = @A.length + 1
+    blen = @B.length + 1
+    clen = @C.length + 1
+
+    @F = Array.new(alen) {Array.new(blen) {Array.new(clen)}}
+    @T = Array.new(alen) {Array.new(blen) {Array.new(clen)}}
+    
+    # First plane in A set to 0
+    (blen).times do |b|
+      (clen).times do |c|
+        @F[0][b][c] = 0
+      end
+    end
+
+    # First plane in B set to 0
+    (clen).times do |c|
+      (alen).times do |a|
+        @F[a][0][c] = 0
+      end
+    end
+
+    # First plane in C set to 0
+    (alen).times do |a|
+      (blen).times do |b|
+        @F[a][b][0] = 0
+      end
+    end
+  end
+
+  def align
+    bestF = 0
+    bestT = [0,0,0]
+    1.upto(@A.length) do |i|
+      1.upto(@B.length) do |j|
+        1.upto(@C.length) do |k|
+          @F[i][j][k], @T[i][j][k] = maxScore(i,j,k)
+          if @F[i][j][k] > bestF
+            bestF = @F[i][j][k]
+            bestT = @T[i][j][k]
+          end
+        end
+      end
+    end
+
+    i, j, k = bestT
+    alignment = ["","",""]
+
+    while @F[i][j][k] != 0 do
+      7.times do |n|
+        x, ai = n & 1 > 0 ? [i, '-'] : [i - 1, @A[i - 1, 1]]
+        y, bj = n & 2 > 0 ? [j, '-'] : [j - 1, @B[j - 1, 1]]
+        z, ck = n & 4 > 0 ? [k, '-'] : [k - 1, @C[k - 1, 1]]
+
+        if @T[i][j][k] == [x,y,z]
+          alignment[0] += ai
+          alignment[1] += bj
+          alignment[2] += ck
+          break
+        end
+      end
+      i, j, k = @T[i][j][k]
+    end
+
+    alignment
+  end
+
+  def score(a, b, c)
+    (Blosum.score(a,b) + Blosum.score(a,c) + Blosum.score(b,c)) / 3.0
+  end
+
+  def maxScore(i, j, k)
+    maxF = 0
+    maxT = [0,0,0]
+    7.times do |n|
+      # Manipulate binary to iterate over adjacent cells in f
+      x, ai = n & 1 > 0 ? [i, '-'] : [i - 1, @A[i - 1, 1]]
+      y, bj = n & 2 > 0 ? [j, '-'] : [j - 1, @B[j - 1, 1]]
+      z, ck = n & 4 > 0 ? [k, '-'] : [k - 1, @C[k - 1, 1]]
+      
+      sc = @F[x][y][z] + score(ai, bj, ck)
+      if sc > maxF
+        maxF = sc
+        maxT = [x,y,z]
+      end
+    end
+
+    [maxF, maxT]
+  end
+end
+
+sw = SmithWaterman.new('ADAAADA','DDADDA','ADD')
+puts sw.align
