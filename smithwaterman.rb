@@ -1,11 +1,12 @@
-require 'blosum'
-require 'utils'
+require './blosum.rb'
+require './utils.rb'
 
 class SmithWaterman
   def initialize(seqA, seqB, seqC)
     @A = seqA
     @B = seqB
     @C = seqC
+    @blosum = Blosum.new
 
     alen = @A.length + 1
     blen = @B.length + 1
@@ -37,12 +38,18 @@ class SmithWaterman
   end
 
   def align
+    # Initialise end point
     bestF = 0
     bestT = [0,0,0]
+
+    # Loop through every cell
     1.upto(@A.length) do |i|
       1.upto(@B.length) do |j|
         1.upto(@C.length) do |k|
+          # Set the best score in F matrix and backtrace to maximising coords
           @F[i][j][k], @T[i][j][k] = maxScore(i,j,k)
+
+          # Update end point if greater score found
           if @F[i][j][k] > bestF
             bestF = @F[i][j][k]
             bestT = @T[i][j][k]
@@ -51,9 +58,11 @@ class SmithWaterman
       end
     end
 
+    # Initialise our alignments
     i, j, k = bestT
     alignment = ["","",""]
 
+    # Follow T and F backwards and trace optimal allignment
     while @F[i][j][k] != 0 do
       7.times do |n|
         x, ai = n & 1 > 0 ? [i, '-'] : [i - 1, @A[i - 1, 1]]
@@ -74,7 +83,7 @@ class SmithWaterman
   end
 
   def score(a, b, c)
-    (Blosum.score(a,b) + Blosum.score(a,c) + Blosum.score(b,c)) / 3.0
+    (@blosum.score(a,b) + @blosum.score(a,c) + @blosum.score(b,c)) / 3.0
   end
 
   def maxScore(i, j, k)
@@ -96,6 +105,3 @@ class SmithWaterman
     [maxF, maxT]
   end
 end
-
-sw = SmithWaterman.new('ADAAADA','DDADDA','ADD')
-puts sw.align

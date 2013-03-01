@@ -13,4 +13,14 @@ class Utils
       puts row.each_with_index.map{|col, i| col.to_s.rjust(w[i])}.inspect.gsub('"', '')
     end
   end
+
+  def self.parseSequenceFile(filename)
+    contents = File.read(filename)
+    sequences = []
+    contents.split('>')[1..-1].each do |seq|
+      sequences.push seq.split("\n")[1..-1].join
+    end
+
+    return sequences
+  end
 end
