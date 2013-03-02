@@ -4,6 +4,7 @@ import java.util.*;
 import java.lang.*;
 
 public class SmithWatermanAligner {
+  private static final int THREAD_THRESHOLD 20000;
   private final int MAX_THREADS;
 
   private String A,B,C;
@@ -55,8 +56,7 @@ public class SmithWatermanAligner {
     for(final ArrayList<Coord> group : groups) {
       // Each group can be computed in parallel
       ArrayList<Thread> threads = new ArrayList<Thread>();
-
-      int numThreads = Math.min(group.size() / 1000, MAX_THREADS);
+      int numThreads = Math.min(group.size() / THREAD_THRESHOLD + 1, MAX_THREADS);
 
       for(int t = 1; t <= numThreads; t++) {
         final int threadId = t;
