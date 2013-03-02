@@ -56,43 +56,28 @@ class SmithWaterman
 
     groups = diagonalise(@A.length, @B.length, @C.length)
 
+    sliceSize = groups.map{ |g| g.length }.max / 8
+
     groups.each do |group|
       threads = []
-      fs = Array.new(group.length)
-      ts = Array.new(group.length)
-      group.each_with_index do |coord, g|
-        i, j, k = coord
-        threads << Thread.new(i,j,k) {
-          @F[i][j][k], @T[i][j][k] = maxScore(i,j,k)
-          fs[g] = @F[i][j][k]
-          ts[g] = @T[i][j][k]
+      scores = []
+      group.each_slice(sliceSize).with_index do |subgroup, gIndex|
+        threads << Thread.new {
+          subgroup.each_with_index do |coords, g|
+            i,j,k = coords
+            @F[i][j][k], @T[i][j][k] = maxScore(i,j,k)
+            scores.push [@F[i][j][k], @T[i][j][k]]
+          end
         }
       end
 
       threads.each {|t| t.join}
-      maxF = fs.each_with_index.max
-      if bestF < maxF[0]
-        bestF = maxF[0]
-        g = maxF[1]
-        bestT = @T[ts[g][0]][ts[g][1]][ts[g][2]]
+      maxScore = scores.map{|s| s[0]}.each_with_index.max
+      if bestF < maxScore[0]
+        bestF = maxScore[0]
+        bestT = scores[maxScore[1]][1]
       end
     end
-
-    # # Loop through every cell
-    # 1.upto(@A.length) do |i|
-    #   1.upto(@B.length) do |j|
-    #     1.upto(@C.length) do |k|
-    #       # Set the best score in F matrix and backtrace to maximising coords
-    #       @F[i][j][k], @T[i][j][k] = maxScore(i,j,k)
-
-    #       # Update end point if greater score found
-    #       if @F[i][j][k] > bestF
-    #         bestF = @F[i][j][k]
-    #         bestT = @T[i][j][k]
-    #       end
-    #     end
-    #   end
-    # end
 
     # Initialise our alignments
     i, j, k = bestT
@@ -106,9 +91,9 @@ class SmithWaterman
         z, ck = n & 4 > 0 ? [k, '-'] : [k - 1, @C[k - 1, 1]]
 
         if @T[i][j][k] == [x,y,z]
-          alignment[0] += ai
-          alignment[1] += bj
-          alignment[2] += ck
+          alignment[0] = ai + alignment[0]
+          alignment[1] = bj + alignment[1]
+          alignment[2] = ck + alignment[2]
           break
         end
       end
