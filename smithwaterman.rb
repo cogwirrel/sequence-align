@@ -38,7 +38,7 @@ class SmithWaterman
   end
 
   def diagonalise(aLength, bLength, cLength)
-    groups = Array.new([aLength, bLength, cLength].reduce(:+) - 2) {[]}
+    groups = Array.new(aLength + bLength + cLength - 2) {[]}
     1.upto(aLength) do |i|
       1.upto(bLength) do |j|
         1.upto(cLength) do |k|
@@ -61,14 +61,14 @@ class SmithWaterman
     groups.each do |group|
       threads = []
       scores = []
-      group.each_slice(sliceSize).with_index do |subgroup, gIndex|
-        threads << Thread.new {
+      group.each_slice(sliceSize) do |subgroup|
+        threads << Thread.new do
           subgroup.each_with_index do |coords, g|
             i,j,k = coords
             @F[i][j][k], @T[i][j][k] = maxScore(i,j,k)
             scores.push [@F[i][j][k], @T[i][j][k]]
           end
-        }
+        end
       end
 
       threads.each {|t| t.join}
