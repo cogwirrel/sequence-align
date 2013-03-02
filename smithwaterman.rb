@@ -37,26 +37,62 @@ class SmithWaterman
     end
   end
 
+  def diagonalise(aLength, bLength, cLength)
+    groups = Array.new([aLength, bLength, cLength].reduce(:+) - 2) {[]}
+    1.upto(aLength) do |i|
+      1.upto(bLength) do |j|
+        1.upto(cLength) do |k|
+          groups[i+j+k-3].push [i,j,k]
+        end
+      end
+    end
+    return groups
+  end
+
   def align
     # Initialise end point
     bestF = 0
     bestT = [0,0,0]
 
-    # Loop through every cell
-    1.upto(@A.length) do |i|
-      1.upto(@B.length) do |j|
-        1.upto(@C.length) do |k|
-          # Set the best score in F matrix and backtrace to maximising coords
-          @F[i][j][k], @T[i][j][k] = maxScore(i,j,k)
+    groups = diagonalise(@A.length, @B.length, @C.length)
 
-          # Update end point if greater score found
-          if @F[i][j][k] > bestF
-            bestF = @F[i][j][k]
-            bestT = @T[i][j][k]
-          end
-        end
+    groups.each do |group|
+      threads = []
+      fs = Array.new(group.length)
+      ts = Array.new(group.length)
+      group.each_with_index do |coord, g|
+        i, j, k = coord
+        threads << Thread.new(i,j,k) {
+          @F[i][j][k], @T[i][j][k] = maxScore(i,j,k)
+          fs[g] = @F[i][j][k]
+          ts[g] = @T[i][j][k]
+        }
+      end
+
+      threads.each {|t| t.join}
+      maxF = fs.each_with_index.max
+      if bestF < maxF[0]
+        bestF = maxF[0]
+        g = maxF[1]
+        bestT = @T[ts[g][0]][ts[g][1]][ts[g][2]]
       end
     end
+
+    # # Loop through every cell
+    # 1.upto(@A.length) do |i|
+    #   1.upto(@B.length) do |j|
+    #     1.upto(@C.length) do |k|
+    #       # Set the best score in F matrix and backtrace to maximising coords
+    #       @F[i][j][k], @T[i][j][k] = maxScore(i,j,k)
+
+    #       # Update end point if greater score found
+    #       if @F[i][j][k] > bestF
+    #         bestF = @F[i][j][k]
+    #         bestT = @T[i][j][k]
+    #       end
+    #     end
+    #   end
+    # end
 
     # Initialise our alignments
     i, j, k = bestT
