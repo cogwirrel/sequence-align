@@ -59,23 +59,31 @@ class SmithWaterman
     sliceSize = groups.map{ |g| g.length }.max / 8
 
     groups.each do |group|
-      threads = []
-      scores = []
+      reader, writer = IO.pipe
       group.each_slice(sliceSize) do |subgroup|
-        threads << Thread.new do
+        fork do
+          results = []
           subgroup.each_with_index do |coords, g|
             i,j,k = coords
-            @F[i][j][k], @T[i][j][k] = maxScore(i,j,k)
-            scores.push [@F[i][j][k], @T[i][j][k]]
+            results.push [[i,j,k], maxScore(i,j,k)]
           end
+          writer.write results.inspect[1..-2] + ","
+          writer.close
         end
       end
 
-      threads.each {|t| t.join}
-      maxScore = scores.map{|s| s[0]}.each_with_index.max
-      if bestF < maxScore[0]
-        bestF = maxScore[0]
-        bestT = scores[maxScore[1]][1]
+      writer.close
+      Process.wait
+      scores = eval("[" + reader.readlines.join.chop + "]")
+
+      scores.each do |score|
+        i,j,k = score[0]
+        @F[i][j][k] = score[1][0]
+        @T[i][j][k] = score[1][1]
+        if @F[i][j][k] > bestF
+          bestF = @F[i][j][k]
+          bestT = @T[i][j][k]
+        end
       end
     end
 
