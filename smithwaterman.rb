@@ -8,30 +8,30 @@ class SmithWaterman
     @C = seqC
     @blosum = Blosum.new
 
-    alen = @A.length + 1
-    blen = @B.length + 1
-    clen = @C.length + 1
+    aLength = @A.length + 1
+    bLength = @B.length + 1
+    cLength = @C.length + 1
 
-    @F = Array.new(alen) {Array.new(blen) {Array.new(clen)}}
-    @T = Array.new(alen) {Array.new(blen) {Array.new(clen)}}
+    @F = Array.new(aLength) {Array.new(bLength) {Array.new(cLength)}}
+    @T = Array.new(aLength) {Array.new(bLength) {Array.new(cLength)}}
     
     # First plane in A set to 0
-    (blen).times do |b|
-      (clen).times do |c|
+    (bLength).times do |b|
+      (cLength).times do |c|
         @F[0][b][c] = 0
       end
     end
 
     # First plane in B set to 0
-    (clen).times do |c|
-      (alen).times do |a|
+    (cLength).times do |c|
+      (aLength).times do |a|
         @F[a][0][c] = 0
       end
     end
 
     # First plane in C set to 0
-    (alen).times do |a|
-      (blen).times do |b|
+    (aLength).times do |a|
+      (bLength).times do |b|
         @F[a][b][0] = 0
       end
     end
