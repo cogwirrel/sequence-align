@@ -70,9 +70,9 @@ class SmithWaterman
         z, ck = n & 4 > 0 ? [k, '-'] : [k - 1, @C[k - 1, 1]]
 
         if @T[i][j][k] == [x,y,z]
-          alignment[0] += ai
-          alignment[1] += bj
-          alignment[2] += ck
+          alignment[0] = ai + alignment[0]
+          alignment[1] = bj + alignment[1]
+          alignment[2] = ck + alignment[2]
           break
         end
       end
