@@ -12,12 +12,12 @@ can see the directory named 'smithwaterman'.
 Compile the java code using:
 `javac smithwaterman/*.java`
 
-This should produce some .class files in the 'smithwaterman' directory.
+This should produce some `.class` files in the `smithwaterman` directory.
 
 Running
 -------
 Sequences should be stored in FASTA format in a file, separated by new lines.
-See 'sequences.in' for an example.
+See `sequences.in` for an example.
 
 Run using:
 
