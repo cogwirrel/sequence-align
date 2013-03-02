@@ -10,9 +10,10 @@ import java.nio.charset.Charset;
 public class SmithWaterman {
   // Smith Waterman entry point
   public static void main(String[] args) throws Exception {
-    if(args.length != 2) {
+    if(args.length < 1 || args.length > 2) {
       System.err.println("Incorrect number of arguments.");
       System.err.println("Usage: java smithwaterman/SmithWaterman <SequenceFile> <NumberOfThreads>");
+      System.err.println("<NumberOfThreads> is optional - default is 1.");
       System.exit(1);
     }
 
@@ -21,14 +22,31 @@ public class SmithWaterman {
     try {
       sequences = parseSequenceFile(args[0]);
     } catch (Exception e) {
-      System.err.println("Could not parse sequence file: " + args[0]);
+      System.err.println("Unable to parse sequence file: " + args[0]);
       System.exit(1);
+    }
+
+    // Parse the number of threads provided
+    int numThreads = 1;
+    if(args.length > 1) {
+      try {
+        int userNumThreads = Integer.parseInt(args[1]);
+        if(userNumThreads > 0) {
+          numThreads = userNumThreads;
+        } else {
+          System.err.println("Number of threads must be an integer greater than 0.");
+          System.err.println("Continuing using 1 thread.");
+        }
+      } catch (Exception e) {
+        System.err.println("Number of threads must be an integer greater than 0.");
+        System.err.println("Continuing using 1 thread.");
+      }
     }
 
     // Initialise Smith Waterman Aligner with the 3 input sequences and
     // maximum number of threads to use
     SmithWatermanAligner sw = new SmithWatermanAligner(
-      sequences[0],sequences[1],sequences[2], Integer.parseInt(args[1]));
+      sequences[0], sequences[1], sequences[2], numThreads);
 
     // Perform the Smith Waterman algorithm to align the 3 sequences
     String[] alignment = sw.align();
@@ -58,7 +76,7 @@ public class SmithWaterman {
     return sequences;
   }
 
-  // Read an entire file into a string
+  // Read a file into a string
   private static String readFile(String filename) throws Exception {
     FileInputStream stream = new FileInputStream(new File(filename));
     try {
