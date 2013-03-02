@@ -1,6 +1,6 @@
 require 'mkmf'
 
-extension_name = 'swcuda'
+extension_name = 'SWCuda'
 
 dir_config(extension_name)
 
