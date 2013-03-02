@@ -60,21 +60,25 @@ class SmithWaterman
 
     groups.each do |group|
       reader, writer = IO.pipe
+      writer.sync = true
       group.each_slice(sliceSize) do |subgroup|
         fork do
           results = []
           subgroup.each_with_index do |coords, g|
             i,j,k = coords
-            results.push [[i,j,k], maxScore(i,j,k)]
+            result = [[i,j,k], maxScore(i,j,k)]
+            writer.write(result.inspect + "\n")
           end
-          writer.write results.inspect[1..-2] + ","
+          #writer.write(results.inspect[1..-2] + "\n")
           writer.close
         end
       end
 
       writer.close
       Process.wait
-      scores = eval("[" + reader.readlines.join.chop + "]")
+      output = reader.readlines.join.chop.gsub("\n", ',')
+      #puts output
+      scores = eval("[" + output + "]")
 
       scores.each do |score|
         i,j,k = score[0]
