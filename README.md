@@ -1,7 +1,7 @@
-Multi-Threaded Smith Waterman Algorithm
-=======================================
+3-Sequence Parallel Smith Waterman
+==================================
 
-This is a parallel implementation of the Smith Waterman algorithm, used to
+This is a multi-threaded implementation of the Smith Waterman algorithm, used to
 compute the optimal alignment of 3 protein sequences.
 
 Compilation
