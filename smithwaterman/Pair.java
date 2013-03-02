@@ -1,5 +1,6 @@
 package smithwaterman;
 
+// Class to hold a pair of objects
 public class Pair<L,R> {
   public L l;
   public R r;

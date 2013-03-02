@@ -4,9 +4,10 @@ import java.util.*;
 import java.lang.*;
 
 public class Blosum {
-
+  // Hashmap for O(1) access to score matrix
   private HashMap<Character,HashMap<Character, Integer>> blosumMap;
 
+  // Construct hashmap to store values in static array
   public Blosum() {
     blosumMap = new HashMap<Character,HashMap<Character, Integer>>();
     for(int i = 0; i < blosumMatrix.length; i++) {
@@ -18,11 +19,13 @@ public class Blosum {
     }
   }
 
+  // Score an amino acid pairing
   public int score(char a, char b) {
     return blosumMap.get(a).get(b);
   }
 
-  private static char[] blosumIndex = {'A','R','N','D','C','Q','E','G','H','I','L','K','M','F','P','S','T','W','Y','V','B','Z','X','-'};
+  // Blosum 62 matrix '-' represents a gap
+  private static char[] blosumIndex =    {'A','R','N','D','C','Q','E','G','H','I','L','K','M','F','P','S','T','W','Y','V','B','Z','X','-'};
   private static int[][] blosumMatrix = {{ 4, -1, -2, -2,  0, -1, -1,  0, -2, -1, -1, -1, -1, -2, -1,  1,  0, -3, -2,  0, -2, -1,  0, -4}, 
                                          {-1,  5,  0, -2, -3,  1,  0, -2,  0, -3, -2,  2, -1, -3, -2, -1, -1, -3, -2, -3, -1,  0, -1, -4}, 
                                          {-2,  0,  6,  1, -3,  0,  0,  0,  1, -3, -3,  0, -2, -3, -2,  1,  0, -4, -2, -3,  3,  0, -1, -4}, 
