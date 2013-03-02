@@ -9,8 +9,9 @@ import java.nio.charset.Charset;
 
 public class SmithWaterman {
   public static void main(String[] args) throws Exception {
-    if(args.length != 1) {
-      System.err.println("Please specify sequence filename.");
+    if(args.length != 2) {
+      System.err.println("Incorrect number of arguments.");
+      System.err.println("Usage: smithwaterman <SequenceFile> <NumberOfThreads>");
       System.exit(1);
     }
 
@@ -22,22 +23,20 @@ public class SmithWaterman {
       System.exit(1);
     }
 
-    System.out.println(sequences[0]);
-    System.out.println(sequences[1]);
-    System.out.println(sequences[2]);
-
     long startTime = System.currentTimeMillis();
 
-    SmithWatermanAligner sw = new SmithWatermanAligner(sequences[0],sequences[1],sequences[2]);
+    SmithWatermanAligner sw = new SmithWatermanAligner(
+      sequences[0],sequences[1],sequences[2], Integer.parseInt(args[1]));
 
     String[] alignment = sw.align();
 
     long endTime = System.currentTimeMillis();
-    
+
     for(int i = 0; i < alignment.length; i++) {
       System.out.println(alignment[i]);
     }
 
+    System.out.println("");
     System.out.println("Completed in " + (endTime - startTime) + "ms");
   }
 
