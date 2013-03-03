@@ -10,10 +10,15 @@ import java.nio.charset.Charset;
 public class SmithWaterman {
   // Smith Waterman entry point
   public static void main(String[] args) throws Exception {
-    if(args.length < 1 || args.length > 2) {
-      System.err.println("Incorrect number of arguments.");
-      System.err.println("Usage: java smithwaterman/SmithWaterman <SequenceFile> <NumberOfThreads>");
-      System.err.println("<NumberOfThreads> is optional - default is 1.");
+    if(args.length < 1 || args.length > 2 || args[0].equals("--help")) {
+      System.err.println("Usage: java smithwaterman/SmithWaterman " +
+                         "<SequenceFile> <NumberOfThreads>\n");
+      System.err.println("<SequenceFile> must contain 3 sequences in FASTA " +
+                         "format, separated by new lines.\n");
+      System.err.println("<NumberOfThreads> is an optional parameter. This " +
+                         "specifies the maximum number of threads that can " +
+                         "be used to compute the optimal alignment. " +
+                         "The default value is 1.");
       System.exit(1);
     }
 
@@ -22,7 +27,7 @@ public class SmithWaterman {
     try {
       sequences = parseSequenceFile(args[0]);
     } catch (Exception e) {
-      System.err.println("Unable to parse sequence file: " + args[0]);
+      System.err.println("Unable to parse sequence file: '" + args[0] + "'");
       System.exit(1);
     }
 

@@ -12,7 +12,7 @@ public class SmithWatermanAligner {
   private final int MAX_THREADS;
 
   // The three sequences
-  private String A,B,C;
+  private String A, B, C;
 
   // Instance of Blosum class to score alignments
   private Blosum blosum;
@@ -22,6 +22,9 @@ public class SmithWatermanAligner {
 
   // T is three dimensional backtrace matrix
   private Coord[][][] T;
+
+  // The optimal alignment of the three sequences (memorised for multiple calls)
+  private String[] alignment;
 
   // Constructor takes three sequences as strings, and the maximum number of
   // threads that may be spawned
@@ -64,6 +67,11 @@ public class SmithWatermanAligner {
 
   // Find optimal alignment of sequences A, B and C
   public String[] align() {
+    // Check whether we have already computed the optimal alignment
+    if(alignment != null) {
+      return alignment;
+    }
+
     // Initialise endpoint
     double bestF = 0;
     Coord bestT = new Coord(0,0,0);
@@ -110,7 +118,6 @@ public class SmithWatermanAligner {
         thread.start();
       }
 
-
       // Wait for all threads to complete
       for(int t = 0; t < numThreads; t++) {
         try {
@@ -131,27 +138,26 @@ public class SmithWatermanAligner {
     }
 
     // Initialise alignment
-    String[] alignment = new String[3];
-    alignment[0] = "";
-    alignment[1] = "";
-    alignment[2] = "";
-    int i = bestT.x;
-    int j = bestT.y;
-    int k = bestT.z;
+    alignment = new String[3];
+    alignment[0] = ""; alignment[1] = ""; alignment[2] = "";
+
+    // i, j and k will keep track of our current position in the sequences
+    int i = bestT.x, j = bestT.y, k = bestT.z;
 
     // Trace back through F and T to store best alignment
     while(F[i][j][k] != 0) {
+      // Every cell has 7 predecessors
       for(int n = 0; n < 7; n++) {
         // Manipulate binary counting to loop through all combinations of
         // predecessor cells
-        Pair<Integer,Character> x = (n & 1) > 0 ?
-          new Pair<Integer,Character>(i, '-') :
+        Pair<Integer, Character> x = (n & 1) > 0 ?
+          new Pair<Integer, Character>(i, '-') :
           new Pair<Integer, Character>(i - 1, A.charAt(i - 1));
         Pair<Integer,Character> y = (n & 2) > 0 ?
-          new Pair<Integer,Character>(j, '-') :
+          new Pair<Integer, Character>(j, '-') :
           new Pair<Integer, Character>(j - 1, B.charAt(j - 1));
-        Pair<Integer,Character> z = (n & 4) > 0 ?
-          new Pair<Integer,Character>(k, '-') :
+        Pair<Integer, Character> z = (n & 4) > 0 ?
+          new Pair<Integer, Character>(k, '-') :
           new Pair<Integer, Character>(k - 1, C.charAt(k - 1));
 
         // If this was the cell from which we arrived
@@ -166,11 +172,9 @@ public class SmithWatermanAligner {
         }
       }
 
-      // Set the next cell to check
+      // Set the next cell to check to our predecessor
       Coord c = T[i][j][k];
-      i = c.x;
-      j = c.y;
-      k = c.z;
+      i = c.x; j = c.y; k = c.z;
     }
 
     return alignment;
@@ -216,6 +220,7 @@ public class SmithWatermanAligner {
     // Initialise best score to 0
     double bestF = 0;
     Coord bestT = new Coord(0,0,0);
+    // Each cell has 7 predecessors
     for(int n = 0; n < 7; n++) {
       // Manipulate binary counting to loop through all combinations of
       // predecessor cells.
@@ -232,15 +237,13 @@ public class SmithWatermanAligner {
       // Score of arriving from predecessor cell
       double sc = F[x.l][y.l][z.l] + score(x.r, y.r, z.r);
 
+      // Set best score and predecessor if score greater than best score so far
       if(sc > bestF) {
         bestF = sc;
-        bestT.x = x.l;
-        bestT.y = y.l;
-        bestT.z = z.l;
+        bestT.x = x.l; bestT.y = y.l; bestT.z = z.l;
       }
     }
     // Return both the best score and the predecessor cell
     return new Pair<Double, Coord>(bestF, bestT);
   }
-
 }
